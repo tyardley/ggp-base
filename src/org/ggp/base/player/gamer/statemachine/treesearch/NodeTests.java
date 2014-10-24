@@ -69,4 +69,31 @@ public class NodeTests {
 		Assert.assertEquals(9.5, child2.utility, 0.0001);
 		Assert.assertEquals(15, parent.utility, 0.0001);
 	}
+
+	@Test
+	public void GetUpperConfidenceBounds_DoesStuff()
+	{
+		Node parent = new Node(new MachineState(), new Vector<Move>());
+		Node child1 = new Node(new MachineState(), new Vector<Move>(), parent);
+		Node child2 = new Node(new MachineState(), new Vector<Move>(), parent);
+
+		child1.propagate(2.3d);
+		child1.propagate(3.2d);
+		child2.propagate(1.0d);
+		child2.propagate(8.5d);
+
+		// value is 5.5 / 2 = 2.75
+		// visits is 2 and parent visits is 4
+		// visit factor = 0.832554611
+		// UCB = 2.75 + 0.832554611 = 3.582554611
+		Assert.assertEquals(3.582554611, child1.getUpperConfidenceBounds(), 0.0001);
+
+		// value is 9.5 / 2 = 4.75
+		// visits is 2 and parent visits is 4
+		// visit factor = 0.832554611
+		// UCB = 4.75 + 0.832554611 = 5.582554611
+		Assert.assertEquals(5.582554611, child2.getUpperConfidenceBounds(), 0.0001);
+	}
+
+	//getMiniMaxUtility
 }

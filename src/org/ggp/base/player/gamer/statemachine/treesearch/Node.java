@@ -65,15 +65,13 @@ public class Node {
 		return result;
 	}
 
-	public void addChild(Node child) {
-
-		this.children.add(child);
-	}
-
 	public double getUpperConfidenceBounds() {
-		return this.utility / (double)this.visits +
-				Math.sqrt(2*Math.log(this.parent.visits) / this.visits);
+		double nodeValue =
+				this.utility / (double)this.visits;
+		double visitFactor =
+				Math.sqrt(Math.log(this.parent.visits) / this.visits);
 
+		return nodeValue + visitFactor;
 	}
 
 	public double getMiniMaxUtility(boolean maxi) {
