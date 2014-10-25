@@ -8,14 +8,14 @@ import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 
 public class Node {
-	public Player player;
-	public MachineState state;
-	public List<Move> move;
-	public int visits;
-	public double utility;
-	public Node parent;
-	public List<Node> children;
-	public boolean isTerminal = false;
+	private Player player;
+	private MachineState state;
+	private List<Move> move;
+	private int visits;
+	private double utility;
+	private Node parent;
+	private List<Node> children;
+	private boolean isTerminal = false;
 
 	public Node(MachineState state, List<Move> move) {
 		this(state, move, null);
@@ -31,6 +31,22 @@ public class Node {
 		this.utility = 0;
 		this.children = new Vector<Node>();
 		this.parent = parent;
+
+		if (this.parent != null) {
+			this.parent.addChild(this);
+		}
+	}
+
+	public int getVisits() {
+		return this.visits;
+	}
+
+	public double getUtility() {
+		return this.utility;
+	}
+
+	private void addChild(Node child) {
+		this.children.add(child);
 	}
 
 	public void visit(double score) {
@@ -77,6 +93,7 @@ public class Node {
 	public double getMiniMaxUtility(boolean maxi) {
 
 		double miniMaxUtility = 0;
+		boolean notSet = true;
 
 		if (this.children.size() == 0) {
 			if (this.visits > 0) {
@@ -91,8 +108,10 @@ public class Node {
 			double childValue = node.getMiniMaxUtility(!maxi);
 
 			if ((maxi && childValue > miniMaxUtility) ||
-					(!maxi && childValue < miniMaxUtility)) {
+					(!maxi && childValue < miniMaxUtility) ||
+						notSet) {
 				miniMaxUtility = childValue;
+				notSet = false;
 			}
 		}
 
