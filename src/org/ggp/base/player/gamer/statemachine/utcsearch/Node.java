@@ -14,8 +14,13 @@ public class Node {
 	private Node parent;
 	private List<Node> children;
 	private boolean isTerminal = false;
-	
-	public Node(MachineState state, List<Move> move, boolean isTerminal) {
+	private boolean isMyMove = false;
+
+	public Node(
+			MachineState state,
+			List<Move> move,
+			boolean isTerminal,
+			boolean isMyMove) {
 		this.state = state;
 		this.move = move;
 		this.visits = 0;
@@ -23,13 +28,15 @@ public class Node {
 		this.children = new Vector<Node>();
 		this.parent = null;
 		this.isTerminal = isTerminal;
+		this.isMyMove = isMyMove;
 	}
-	
+
 	public Node(
-			MachineState state, 
-			List<Move> move, 
+			MachineState state,
+			List<Move> move,
 			Node parent,
-			boolean isTerminal) {
+			boolean isTerminal,
+			boolean isMyMove) {
 		this.state = state;
 		this.move = move;
 		this.visits = 0;
@@ -37,26 +44,31 @@ public class Node {
 		this.children = new Vector<Node>();
 		this.parent = parent;
 		this.isTerminal = isTerminal;
+		this.isMyMove = isMyMove;
 	}
-	
+
 	public MachineState getState() { return this.state; }
-	
+
 	public List<Move> getMove() { return this.move; }
-	
+
 	public int getVisits() { return this.visits; }
-	
+
 	public double getTotalUtility() { return this.totalUtility; }
-	
+
+	public double getAverageUtility() { return this.totalUtility / ((double)this.visits); }
+
 	public Node getParent() { return this.parent; }
-	
+
 	public List<Node> getChildren() { return this.children; }
-	
+
 	public boolean getIsTerminal() { return this.isTerminal; }
-	
+
+	public boolean getIsMyMove() { return this.isMyMove; }
+
 	public void addChild(Node node) {
 		this.children.add(node);
 	}
-	
+
 	public void visit(double utility) {
 		this.visits++;
 		this.totalUtility += utility;

@@ -38,28 +38,39 @@ public class UctSearchGamer extends SampleGamer {
 		this.persister = new JsonPersister();
 		this.role = getRole();
 
+
 		System.out.println("role: " + this.role.toString());
 		System.out.println("role index: " + stateMachine.getRoles().indexOf(role));
 
+		boolean isMyMove = true;
+
 		MachineState currentState = getCurrentState();
-		Node root = nodeFactory.Create(currentState, null, null);
+		Node root = nodeFactory.Create(currentState, null, null, isMyMove);
 
 		boolean withinBudget = true;
 
 		while (withinBudget) {
 			Node selected = TreePolicy(root);
 			double reward = DefaultPolicy(selected);
+
 			BackUp(selected, reward);
 			iterations++;
 			withinBudget = CheckWithinBudget();
 		}
 
-		// persister.Persist(root);
-
-		System.out.println("iterations: " + iterations);
 		Node bestChild = BestChild(root, 0);
 		int roleIndex = stateMachine.getRoles().indexOf(role);
-		return bestChild.getMove().get(roleIndex);
+		Move chosenMove = bestChild.getMove().get(roleIndex);
+		System.out.println(
+				"**[CHOSE MOVE]**: " +
+				chosenMove.toString() +
+				" (" + iterations + " iterations)");
+
+		if (chosenMove.toString() != "noop") {
+			persister.Persist(root);
+		}
+
+		return chosenMove;
 	}
 
 	public Node TreePolicy(Node node)
@@ -126,7 +137,7 @@ public class UctSearchGamer extends SampleGamer {
 
 			if (!foundChild) {
 				// add the new child and return the child
-				Node newChild = nodeFactory.Create(nextState, move, node);
+				Node newChild = nodeFactory.Create(nextState, move, node, !node.getIsMyMove());
 				node.addChild(newChild);
 				return newChild;
 			}
@@ -178,20 +189,27 @@ public class UctSearchGamer extends SampleGamer {
 
 		MachineState endState =
 				stateMachine.performDepthCharge(node.getState(), null);
-		return stateMachine.getGoal(endState, role);
+
+		int result = stateMachine.getGoal(endState, role);
+
+		if (node.getIsMyMove()) {
+			result = -result;
+		}
+
+		return result;
 	}
 
 	public void BackUp(Node node, double reward) {
 		while (node != null)
 		{
 			node.visit(reward);
-			reward = -reward;
 			node = node.getParent();
+			reward = -reward;
 		}
 	}
 
 	public boolean CheckWithinBudget() {
-		if (iterations > 1000) {
+		if (iterations > 100000) {
 			return false;
 		}
 

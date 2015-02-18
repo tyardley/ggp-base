@@ -9,15 +9,15 @@ import org.ggp.base.util.statemachine.StateMachine;
 public class NodeFactory {
 
 	private StateMachine stateMachine;
-	
+
 	public NodeFactory(StateMachine stateMachine) {
 		this.stateMachine = stateMachine;
 	}
-	
-	public Node Create(MachineState state, List<Move> move, Node parent) {
-		
+
+	public Node Create(MachineState state, List<Move> move, Node parent, boolean isMyMove) {
+
 		boolean isTerminal = stateMachine.isTerminal(state);
 
-		return new Node(state, move, parent, isTerminal);
+		return new Node(state, move, parent, isTerminal, isMyMove);
 	}
 }

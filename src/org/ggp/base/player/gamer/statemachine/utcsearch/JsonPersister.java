@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine.utcsearch;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 public class JsonPersister {
 
@@ -10,7 +11,7 @@ public class JsonPersister {
 			"/home/bluey/Desktop/uctsearchtree.js";
 
 	public void Persist(Node root) {
-		String data = "var treeData = [" + NodeToJson(root) + "];";
+		String data = "var treeData = [" + NodeToJson(root, true, 0) + "];";
 
 		PrintWriter writer;
 		try {
@@ -23,11 +24,15 @@ public class JsonPersister {
 		}
 	}
 
-	public String NodeToJson(Node node) {
+	public String NodeToJson(Node node, boolean isBest, int level) {
 		String result = "{" + System.lineSeparator();
 
-		String name = node.getMove() != null ? node.getMove().toString() : "root";
+		String name =
+				node.getMove() != null ?
+						node.getMove().toString() :
+							"root";
 
+		name += " (" + node.getAverageUtility() + ")";
 	    result += "'name': '" + name  + "'," + System.lineSeparator();
 
 	    if (node.getParent() != null) {
@@ -40,27 +45,74 @@ public class JsonPersister {
 	    }
 
 	    double value = ((double)node.getVisits());
+	    String colour = "steelblue";
+
+	    if (node.getIsMyMove()) {
+	    	colour = "yellow";
+	    }
+
+	    if (isBest) {
+	    	colour = "orange";
+	    }
+
 	    result += "'value': " + value + "," + System.lineSeparator();
-	    result += "'type': 'orange'," + System.lineSeparator();
-	    result += "'level': 'steelblue '," + System.lineSeparator();
+	    result += "'type': '" + "steelblue" + "'," + System.lineSeparator();
+	    result += "'level': '" + colour + "'," + System.lineSeparator();
 
 	    if (node.getChildren().size() > 0) {
 	    	result += "'children': [";
 
 	    	boolean isFirst = true;
-	    	for (Node child : node.getChildren()) {
+
+	    	List<Node> children = node.getChildren();
+	    	double best = getBestUtility(children);
+
+	    	boolean bestFound = false;
+
+	    	for (Node child : children) {
 
 	    		if (!isFirst) {
 	    			result += ",";
 	    		}
 
-	    		result += NodeToJson(child) + System.lineSeparator();
+	    		boolean isBestChild = child.getAverageUtility() >= best && isBest;
+
+	    		if (isBestChild) {
+	    			bestFound = true;
+	    		}
+
+	    		result += NodeToJson(child, isBestChild, level + 1) + System.lineSeparator();
+
 	    		isFirst = false;
+	    	}
+
+	    	if (!bestFound && isBest)
+	    	{
+	    		System.out.println("no best child found: " + node.getMove() + " at level: " + level);
+	    		System.out.println("best util: " + best);
+
+		    	for (Node child : children) {
+		    		System.out.println(child.getMove() + " util: " + child.getAverageUtility());
+		    	}
 	    	}
 
 	    	result += "]";
 	    }
 	    result += "}" + System.lineSeparator();
 		return result;
+	}
+
+	public double getBestUtility(List<Node> nodes) {
+
+    	double best = -Double.MAX_VALUE;
+
+    	for (Node node : nodes) {
+
+    		if (node.getAverageUtility() > best) {
+    			best = node.getAverageUtility();
+    		}
+    	}
+
+    	return best;
 	}
 }
